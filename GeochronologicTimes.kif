@@ -35,12 +35,10 @@
 (termFormat EnglishLanguage GeochronologicAge "age")
 (termFormat PortugueseLanguage GeochronologicAge "idade")
 
-;; The hierarchy is
-;; SuperEon > Eon > Era > Period > SubPeriod > Epoch > Age
 
+(subclass GeochronologicBase TimePoint)
 
 (instance Present (BeginFn (YearFn 1950))
-
 
 (instance MillionYearsAgoFromPresent UnaryFunction)
 (domain MillionYearsAgoFromPresent 1 Number)
@@ -49,23 +47,60 @@
 (equal 
  (MillionYearsAgoFromPresent ?X) 
  (BeginFn (YearFn (AdditionFn 1950 (MultiplicationFn ?X -1000000)))))
- 
-
-(=> (and (instance ?age1 GeochronologicAge)
-          (instance ?age2 GeochronologicAge))
-    (not (overlapsTemporally ?age1 ?age2)))
 
 
-(forall (?age)
- (=> (instance ?age GeochronologicAge) 
-     (exists (?epoch)
-        (and (instance ?epoch GeochronologicEpoch) 
-	     (or (starts ?age ?epoch)  
-		 (during ?age ?epoch)
-		 (finishes ?age ?epoch))))))
+;; The hierarchy is
+;; SuperEon > Eon > Era > Period > SubPeriod > Epoch > Age
 
 
-(subclass GeochronologicBase TimePoint)
+(=> (and (instance ?X GeochronologicAge)
+         (instance ?Y GeochronologicAge))
+    (not (overlapsTemporally ?X ?Y)))
+
+(=> (and (instance ?X GeochronologicEra)
+         (instance ?Y GeochronologicEra))
+    (not (overlapsTemporally ?X ?Y)))
+
+(=> (and (instance ?X GeochronologicEpoch)
+         (instance ?Y GeochronologicEpoch))
+    (not (overlapsTemporally ?X ?Y)))
+    
+(=> (and (instance ?X GeochronologicPeriod)
+         (instance ?Y GeochronologicPeriod))
+    (not (overlapsTemporally ?X ?Y)))
+
+(=> (and (instance ?X GeochronologicEon)
+         (instance ?Y GeochronologicEon))
+    (not (overlapsTemporally ?X ?Y)))
+
+
+(=> (instance ?X GeochronologicAge) 
+    (exists (?Y)
+       (and (instance ?Y GeochronologicEpoch) 
+	    (or (starts ?X ?Y)  
+		(during ?X ?Y)
+		(finishes ?X ?Y)))))
+
+(=> (instance ?X GeochronologicEpoch) 
+    (exists (?Y)
+       (and (instance ?Y GeochronologicPeriod) 
+	    (or (starts ?X ?Y)  
+		(during ?X ?Y)
+		(finishes ?X ?Y)))))
+
+(=> (instance ?X GeochronologicPeriod) 
+    (exists (?Y)
+       (and (instance ?Y GeochronologicEra) 
+	    (or (starts ?X ?Y)  
+		(during ?X ?Y)
+		(finishes ?X ?Y)))))
+
+(=> (instance ?X GeochronologicEra) 
+    (exists (?Y)
+       (and (instance ?Y GeochronologicEon) 
+	    (or (starts ?X ?Y)  
+		(during ?X ?Y)
+		(finishes ?X ?Y)))))
 
 
 ;; Quaternary
