@@ -6,7 +6,8 @@
 ;;
 ;; Authors:
 ;; - Alexandre Rademaker (IBM Research Brazil, FGV/EMAp) and 
-;; - Vitória Guardieiro (FGV/EMAp)
+;; - Vitória Guardieiro (FGV/EMAp) and
+;; - Alexandre Tessarollo (Petrobras, FGV/EMAp)
 
 (subclass GeochronologicSuperEon TimeInterval)
 (termFormat EnglishLanguage GeochronologicSuperEon "supereon")
@@ -35,10 +36,13 @@
 (termFormat EnglishLanguage GeochronologicAge "age")
 (termFormat PortugueseLanguage GeochronologicAge "idade")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Setting grounds for temporal references Millions of years ago ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (subclass GeochronologicBase TimePoint)
 
-(instance Present (BeginFn (YearFn 1950))
+(instance GeoPresent (BeginFn (YearFn 1950))
 
 (instance MillionYearsAgoFromPresent UnaryFunction)
 (domain MillionYearsAgoFromPresent 1 Number)
@@ -49,30 +53,35 @@
  (BeginFn (YearFn (AdditionFn 1950 (MultiplicationFn ?X -1000000)))))
 
 
-;; The hierarchy is
-;; SuperEon > Eon > Era > Period > SubPeriod > Epoch > Age
+;; there are no two GeochronologicXXX overlapping
 
-
-(=> (and (instance ?X GeochronologicAge)
-         (instance ?Y GeochronologicAge))
+(=> (and (instance ?X GeochronologicEon)
+         (instance ?Y GeochronologicEon))
     (not (overlapsTemporally ?X ?Y)))
-
+    
 (=> (and (instance ?X GeochronologicEra)
          (instance ?Y GeochronologicEra))
+    (not (overlapsTemporally ?X ?Y)))
+
+(=> (and (instance ?X GeochronologicPeriod)
+         (instance ?Y GeochronologicPeriod))
+    (not (overlapsTemporally ?X ?Y)))
+
+(=> (and (instance ?X GeochronologicSubPeriod)
+         (instance ?Y GeochronologicSubPeriod))
     (not (overlapsTemporally ?X ?Y)))
 
 (=> (and (instance ?X GeochronologicEpoch)
          (instance ?Y GeochronologicEpoch))
     (not (overlapsTemporally ?X ?Y)))
     
-(=> (and (instance ?X GeochronologicPeriod)
-         (instance ?Y GeochronologicPeriod))
+(=> (and (instance ?X GeochronologicAge)
+         (instance ?Y GeochronologicAge))
     (not (overlapsTemporally ?X ?Y)))
 
-(=> (and (instance ?X GeochronologicEon)
-         (instance ?Y GeochronologicEon))
-    (not (overlapsTemporally ?X ?Y)))
-
+;; The hierarchy is
+;; SuperEon > Eon > Era > Period > SubPeriod (where one exists) > Epoch > Age
+;; 
 
 (=> (instance ?X GeochronologicAge) 
     (exists (?Y)
@@ -83,6 +92,8 @@
 
 (=> (instance ?X GeochronologicEpoch) 
     (exists (?Y)
+       (or (instance ?Y GeochronologicPeriod) 
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;seguir daqui;;;;;;;;;;;;;;;;;;;;
        (and (instance ?Y GeochronologicPeriod) 
 	    (or (starts ?X ?Y)  
 		(during ?X ?Y)
